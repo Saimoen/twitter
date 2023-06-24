@@ -1,28 +1,36 @@
 const express = require("express");
 const morgan = require("morgan");
 const path = require("path");
+const index = require("./routes");
+const errorHandler = require("errorhandler");
 require("./database");
 
 const app = express();
+exports.app = app;
 const port = process.env.PORT || 3000;
-const index = require("./routes");
 
-/* Permet de définir où sont mes templates */
-app.set("views", path.join(__dirname + "/views"));
+app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
 
+require("./config/session.config");
+require("./config/passport.config");
+
 app.use(morgan("short"));
-
-/* Permet d'aller chercher les fichiers statique */
 app.use(express.static(path.join(__dirname, "public")));
-
-/* Récupère la data sous le format JSON */
 app.use(express.json());
-
-/* Récupère la data sous d'autres formats */
 app.use(express.urlencoded({ extended: true }));
-
-/* Point d'entrée de nos routes */
 app.use(index);
+
+if (process.env.NODE_ENV === "development") {
+  app.use(errorHandler());
+} else {
+  app.use((err, req, res, next) => {
+    const code = err.code || 500;
+    res.status(code).json({
+      code: code,
+      message: code === 500 ? null : err.message,
+    });
+  });
+}
 
 app.listen(port);

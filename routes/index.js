@@ -1,17 +1,13 @@
 const router = require("express").Router();
-const api = require("./api");
-const Tweet = require("../database/models/tweet.model");
+const tweets = require("./tweets.routes");
+const users = require("./user.routes");
+const auth = require("./auth.routes");
 
-router.use("/api", api);
-
-router.get("/tweet/new", (req, res) => {
-  res.render("tweets/tweet-form");
-});
-
+router.use("/tweets", tweets);
+router.use("/users", users);
+router.use("/auth", auth);
 router.get("/", (req, res) => {
-  Tweet.find({})
-    .exec()
-    .then((tweets) => res.render("tweets/tweet-list", { tweets }));
+  res.redirect("/tweets");
 });
 
 module.exports = router;
